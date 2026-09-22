@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BYPASS TOOL — GREEN ACCESS</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Consolas', 'Courier New', monospace;
+    background: radial-gradient(circle at center, #0d1a0d 0%, #000 80%);
+    color: #00ff41;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .container {
+    width: 100%;
+    max-width: 640px;
+    background: #000;
+    border: 2px solid #00ff41;
+    border-radius: 12px;
+    padding: 28px;
+    box-shadow: 0 0 30px rgba(0,255,65,0.4), inset 0 0 20px rgba(0,255,65,0.05);
+  }
+  h1 {
+    color: #00ff41;
+    text-align: center;
+    font-size: 22px;
+    letter-spacing: 3px;
+    margin-bottom: 6px;
+    text-shadow: 0 0 10px #00ff41;
+  }
+  .subtitle {
+    text-align: center;
+    color: #00aa2a;
+    font-size: 12px;
+    margin-bottom: 22px;
+    letter-spacing: 2px;
+  }
+  label { display: block; margin-bottom: 6px; font-size: 13px; color: #00cc33; }
+  input[type="text"] {
+    width: 100%;
+    padding: 12px 14px;
+    background: #051005;
+    border: 1.5px solid #00ff41;
+    color: #00ff41;
+    font-family: inherit;
+    font-size: 14px;
+    border-radius: 6px;
+    outline: none;
+    transition: 0.2s;
+  }
+  input[type="text"]:focus { box-shadow: 0 0 12px rgba(0,255,65,0.6); }
+  button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 12px;
+    background: transparent;
+    border: 2px solid #00ff41;
+    color: #00ff41;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  button:hover:not(:disabled) {
+    background: #00ff41;
+    color: #000;
+    box-shadow: 0 0 20px #00ff41;
+  }
+  button:disabled { opacity: 0.4; cursor: not-allowed; }
+  .services { margin-top: 18px; }
+  .services .title { font-size: 13px; color: #00cc33; margin-bottom: 8px; }
+  .services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 8px;
+  }
+  .svc {
+    padding: 8px 10px;
+    border: 1px solid #00aa2a;
+    border-radius: 6px;
+    font-size: 12px;
+    text-align: center;
+    cursor: pointer;
+    user-select: none;
+    background: #051005;
+    transition: 0.15s;
+  }
+  .svc:hover { border-color: #00ff41; }
+  .svc.selected {
+    background: #00ff41;
+    color: #000;
+    box-shadow: 0 0 12px #00ff41;
+    font-weight: bold;
+  }
+  .status-box {
+    margin-top: 16px;
+    padding: 14px;
+    border: 1px dashed #00ff41;
+    border-radius: 6px;
+    background: #031003;
+    font-size: 13px;
+    min-height: 40px;
+    display: none;
+  }
+  .status-box.show { display: block; }
+  .status-line { padding: 2px 0; }
+  .status-line.ok { color: #00ff41; }
+  .status-line.info { color: #00cc33; }
+  .status-line.success { color: #00ff41; text-shadow: 0 0 8px #00ff41; font-weight: bold; }
+  .error-box {
+    margin-top: 14px;
+    padding: 12px;
+    border: 2px solid #ff2222;
+    border-radius: 6px;
+    color: #ff2222;
+    background: #1a0000;
+    text-align: center;
+    font-weight: bold;
+    text-shadow: 0 0 8px #ff2222;
+    display: none;
+  }
+  .error-box.show { display: block; animation: shake 0.4s; }
+  @keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    75% { transform: translateX(-5px); }
+    100% { transform: translateX(0); }
+  }
+  .result-box {
+    margin-top: 14px;
+    padding: 14px;
+    border: 2px solid #00ff41;
+    border-radius: 6px;
+    background: #031003;
+    box-shadow: 0 0 15px rgba(0,255,65,0.4);
+    display: none;
+  }
+  .result-box.show { display: block; animation: fadeIn 0.4s; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .result-box .label { font-size: 12px; color: #00cc33; margin-bottom: 6px; }
+  .result-box a {
+    color: #00ff41;
+    word-break: break-all;
+    font-size: 13px;
+    text-decoration: underline;
+  }
+  .meta-info {
+    margin-top: 10px;
+    font-size: 11px;
+    color: #00aa2a;
+    line-height: 1.7;
+    border-top: 1px dashed #006618;
+    padding-top: 8px;
+  }
+  .hidden { display: none !important; }
+  .footer-note {
+    text-align: center;
+    font-size: 10px;
+    color: #006618;
+    margin-top: 16px;
+    letter-spacing: 1px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ================= LOGIN ================= -->
+  <div id="loginScreen">
+    <h1>BYPASS TOOL</h1>
+    <div class="subtitle">/// GREEN ACCESS SYSTEM ///</div>
+    <label>Vui lòng nhập mã để truy cập</label>
+    <input type="text" id="codeInput" placeholder="Nhập mã truy cập..." autocomplete="off">
+    <button id="loginBtn">XÁC NHẬN</button>
+    <div class="error-box" id="loginError"></div>
+  </div>
+
+  <!-- ================= MAIN ================= -->
+  <div id="mainScreen" class="hidden">
+    <h1>BYPASS TOOL</h1>
+    <div class="subtitle">/// ACCESS GRANTED ///</div>
+
+    <label>Dán URL của web cần vượt link (chỉ chấp nhận https://)</label>
+    <input type="text" id="urlInput" placeholder="https://..." autocomplete="off">
+
+    <div class="services">
+      <div class="title">Ấn chọn các link trên để xác nhận:</div>
+      <div class="services-grid" id="servicesGrid"></div>
+    </div>
+
+    <button id="bypassBtn">VƯỢT LINK</button>
+
+    <div class="status-box" id="statusBox"></div>
+    <div class="error-box" id="errorBox"></div>
+
+    <div class="result-box" id="resultBox">
+      <div class="label">&gt;&gt; LINK ĐÃ VƯỢT THÀNH CÔNG &lt;&lt;</div>
+      <a id="resultLink" href="#" target="_blank" rel="noopener"></a>
+      <div class="meta-info" id="metaInfo"></div>
+    </div>
+  </div>
+
+  <div class="footer-note">© BYPASS TOOL • GREEN EDITION</div>
+</div>
+
+<script>
+/* ====================== CẤU HÌNH ====================== */
+const WRONG_CODE = 'K8F2M9P4VT';
+const VALID_CODES = [
+  '7B9X3W1R5Z',
+  'P4N8Q2Y6KD',
+  '9J3C7V1M8L',
+  'W5T2B9R4HX',
+  '2M8G6K1P9S',
+  'X7L3D9V4B2',
+  'R1P9H5Z3C8',
+  '4V8N2Q6M1K'
+];
+
+const SERVICES = [
+  'Gtraffic.io',
+  'Link4m',
+  'Layma.net',
+  'Traffic4k.com',
+  'Site2s.com',
+  'Bbmkt.com',
+  'Ontop.link'
+];
+
+/* URL → link kết quả */
+const URL_MAP = {
+  'https://layma.net/5ABkvpfQu':
+    'https://www.mediafire.com/file/msusgfxw3xosdpl/AimLock+Bro.zip/file',
+  'https://link4m.net/eYerc':
+    'https://www.mediafire.com/file/yqefvmq4mefu7h5/Minecraft_PE_26.30_BANDISHARE.apk/file',
+  'https://bbmkts.com/go/Hfz47hy5':
+    'https://www.mediafire.com/file/i5eioodkjudzmty/hackff+menuFFM.zip/file',
+  'https://gtraffic.io/Yv2QaKD':
+    'https://pastefy.app/bbSrxKOk/raw'
+};
+
+/* ====================== DOM ====================== */
+const loginScreen = document.getElementById('loginScreen');
+const mainScreen  = document.getElementById('mainScreen');
+const codeInput   = document.getElementById('codeInput');
+const loginBtn    = document.getElementById('loginBtn');
+const loginError  = document.getElementById('loginError');
+
+const urlInput    = document.getElementById('urlInput');
+const bypassBtn   = document.getElementById('bypassBtn');
+const statusBox   = document.getElementById('statusBox');
+const errorBox    = document.getElementById('errorBox');
+const resultBox   = document.getElementById('resultBox');
+const resultLink  = document.getElementById('resultLink');
+const metaInfo    = document.getElementById('metaInfo');
+
+/* ====================== SERVICES GRID ====================== */
+const servicesGrid = document.getElementById('servicesGrid');
+SERVICES.forEach(name => {
+  const el = document.createElement('div');
+  el.className = 'svc';
+  el.textContent = name;
+  el.addEventListener('click', () => el.classList.toggle('selected'));
+  servicesGrid.appendChild(el);
+});
+
+/* ====================== LOGIN ====================== */
+function showLoginError(msg) {
+  loginError.textContent = msg;
+  loginError.classList.add('show');
+}
+
+loginBtn.addEventListener('click', handleLogin);
+codeInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') handleLogin();
+});
+
+function handleLogin() {
+  const code = codeInput.value.trim();
+  if (!code) {
+    showLoginError('Vui lòng nhập mã truy cập!');
+    return;
+  }
+  if (code === WRONG_CODE) {
+    showLoginError('MÃ BẠN CẤP KHÔNG CHÍNH XÁC. QUAY LẠI VÀO NGÀY MAI!');
+    return;
+  }
+  if (VALID_CODES.includes(code)) {
+    loginError.classList.remove('show');
+    loginScreen.classList.add('hidden');
+    mainScreen.classList.remove('hidden');
+  } else {
+    showLoginError('Mã không hợp lệ!');
+  }
+}
+
+/* ====================== UTILS ====================== */
+function fakeIP() {
+  return [0,0,0,0].map(() => Math.floor(Math.random() * 255)).join('.');
+}
+
+function showError(msg) {
+  errorBox.textContent = msg;
+  errorBox.classList.add('show');
+}
+
+function clearAll() {
+  errorBox.classList.remove('show');
+  errorBox.textContent = '';
+  resultBox.classList.remove('show');
+  statusBox.innerHTML = '';
+  statusBox.classList.add('show');
+}
+
+/* ====================== BYPASS ====================== */
+bypassBtn.addEventListener('click', () => {
+  const url = urlInput.value.trim();
+
+  if (!url) {
+    clearAll();
+    showError('Vui lòng dán URL của web cần vượt link!');
+    return;
+  }
+  if (!url.startsWith('https://')) {
+    clearAll();
+    showError('CHỈ CHẤP NHẬN URL DẠNG https://');
+    return;
+  }
+
+  clearAll();
+  bypassBtn.disabled = true;
+  bypassBtn.textContent = 'ĐANG XỬ LÝ...';
+
+  const steps = [
+    { text: 'Trạng thái: Sẵn sàng',       cls: 'info' },
+    { text: 'Đang kiểm tra kết nối...',   cls: 'info' },
+    { text: 'Kết nối thành công!',         cls: 'ok' },
+    { text: 'Đang tải module...',          cls: 'info' },
+    { text: 'Tải module hoàn tất!',        cls: 'ok' },
+    { text: 'Đang giả lập bypass...',      cls: 'info' },
+    { text: 'Bỏ qua xác thực...',          cls: 'ok' },
+    { text: 'Đang xác nhận...',            cls: 'info' }
+  ];
+
+  let i = 0;
+  const interval = setInterval(() => {
+    if (i < steps.length) {
+      const line = document.createElement('div');
+      line.className = 'status-line ' + steps[i].cls;
+      line.textContent = '> ' + steps[i].text;
+      statusBox.appendChild(line);
+      i++;
+    } else {
+      clearInterval(interval);
+    }
+  }, 1500);
+
+  /* Sau 15 giây xử lý kết quả */
+  setTimeout(() => {
+    clearInterval(interval);
+
+    /* Nếu các bước chưa chạy hết, in nốt */
+    while (i < steps.length) {
+      const line = document.createElement('div');
+      line.className = 'status-line ' + steps[i].cls;
+      line.textContent = '> ' + steps[i].text;
+      statusBox.appendChild(line);
+      i++;
+    }
+
+    const mapped = URL_MAP[url];
+
+    if (mapped) {
+      /* ---- THÀNH CÔNG ---- */
+      const l1 = document.createElement('div');
+      l1.className = 'status-line success';
+      l1.textContent = '> Bypass thành công!';
+      statusBox.appendChild(l1);
+
+      const l2 = document.createElement('div');
+      l2.className = 'status-line success';
+      l2.textContent = '> Bạn đã vượt qua giới hạn!';
+      statusBox.appendChild(l2);
+
+      resultLink.href = mapped;
+      resultLink.textContent = mapped;
+
+      const now = new Date().toLocaleString('vi-VN');
+      metaInfo.innerHTML =
+        'Thời gian: ' + now + '<br>' +
+        'IP thiết bị: ' + fakeIP() + '<br>' +
+        'Thiết bị: ' + navigator.userAgent;
+
+      resultBox.classList.add('show');
+    } else {
+      /* ---- LỖI (85% kết nối / 15% error 404) ---- */
+      const r = Math.random();
+      if (r < 0.85) {
+        showError('LỖI KẾT NỐI THIẾT BỊ. VUI LÒNG KIỂM TRA KẾT NỐI MẠNG CỦA BẠN');
+      } else {
+        showError('ERROR 404: DO NOT ACCEPT THIS ACTION');
+      }
+    }
+
+    bypassBtn.disabled = false;
+    bypassBtn.textContent = 'VƯỢT LINK';
+  }, 15000);
+});
+</script>
+</body>
+  </html>
