@@ -169,6 +169,15 @@
     margin-top: 16px;
     letter-spacing: 1px;
   }
+  .session-info {
+    text-align: center;
+    font-size: 11px;
+    color: #00aa2a;
+    margin-bottom: 14px;
+    padding: 6px;
+    border: 1px dashed #006618;
+    border-radius: 4px;
+  }
 </style>
 </head>
 <body>
@@ -178,6 +187,7 @@
   <div id="loginScreen">
     <h1>BYPASS TOOL</h1>
     <div class="subtitle">/// GREEN ACCESS SYSTEM ///</div>
+    <div class="session-info" id="sessionInfo"></div>
     <label>Vui lòng nhập mã để truy cập</label>
     <input type="text" id="codeInput" placeholder="Nhập mã truy cập..." autocomplete="off">
     <button id="loginBtn">XÁC NHẬN</button>
@@ -248,6 +258,97 @@ const URL_MAP = {
     'https://pastefy.app/bbSrxKOk/raw'
 };
 
+/* ====================== SESSION / LƯU TRẠNG THÁI ====================== */
+const STORAGE_KEY = 'bypass_session_v1';
+
+/* Lấy ngày hôm nay theo dạng YYYY-MM-DD (theo giờ máy) */
+function todayKey() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+/* Đọc session đã lưu */
+function loadSession() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    return data;
+  } catch (e) { return null; }
+}
+
+/* Ghi session */
+function saveSession(extra = {}) {
+  const data = Object.assign({
+    date: todayKey(),
+    granted: true,
+    savedAt: Date.now()
+  }, extra);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
+/* Xoá session */
+function clearSession() {
+  localStorage.removeItem(STORAGE_KEY);
+}
+
+/* Kiểm tra session còn hợp lệ không (cùng ngày) */
+function isSessionValid() {
+  const s = loadSession();
+  if (!s) return false;
+  if (!s.granted) return false;
+  if (s.date !== todayKey()) {
+    /* Đã qua ngày mới → xoá */
+    clearSession();
+    return false;
+  }
+  return true;
+}
+
+/* Đếm ngược tới 00:00 hôm sau */
+function msUntilMidnight() {
+  const now = new Date();
+  const next = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0);
+  return next - now;
+}
+
+/* Tự động reset khi qua 00:00 */
+function scheduleMidnightReset() {
+  const delay = msUntilMidnight();
+  setTimeout(() => {
+    clearSession();
+    /* Reset UI về màn hình login */
+    mainScreen.classList.add('hidden');
+    loginScreen.classList.remove('hidden');
+    codeInput.value = '';
+    urlInput.value = '';
+    loginError.classList.remove('show');
+    errorBox.classList.remove('show');
+    statusBox.innerHTML = '';
+    statusBox.classList.remove('show');
+    resultBox.classList.remove('show');
+    document.querySelectorAll('.svc').forEach(s => s.classList.remove('selected'));
+    updateSessionInfo();
+    /* Hẹn tiếp cho ngày hôm sau */
+    scheduleMidnightReset();
+  }, delay + 500); /* +500ms cho an toàn */
+}
+
+/* Hiển thị thông tin session ở màn login */
+function updateSessionInfo() {
+  const s = loadSession();
+  const el = document.getElementById('sessionInfo');
+  if (!el) return;
+  if (s && s.date === todayKey()) {
+    el.textContent = 'PHIÊN ĐÃ LƯU: ' + s.date + ' • TỰ ĐỘNG LÀM MỚI SAU 00:00';
+  } else {
+    el.textContent = 'PHIÊN MỚI • SẼ ĐƯỢC LƯU ĐẾN 00:00 HÔM NAY';
+  }
+}
+
 /* ====================== DOM ====================== */
 const loginScreen = document.getElementById('loginScreen');
 const mainScreen  = document.getElementById('mainScreen');
@@ -269,7 +370,10 @@ SERVICES.forEach(name => {
   const el = document.createElement('div');
   el.className = 'svc';
   el.textContent = name;
-  el.addEventListener('click', () => el.classList.toggle('selected'));
+  el.addEventListener('click', () => {
+    el.classList.toggle('selected');
+    saveSession(); /* lưu trạng thái chọn link */
+  });
   servicesGrid.appendChild(el);
 });
 
@@ -296,6 +400,8 @@ function handleLogin() {
   }
   if (VALID_CODES.includes(code)) {
     loginError.classList.remove('show');
+    /* Lưu session */
+    saveSession({ granted: true });
     loginScreen.classList.add('hidden');
     mainScreen.classList.remove('hidden');
   } else {
@@ -368,7 +474,6 @@ bypassBtn.addEventListener('click', () => {
   setTimeout(() => {
     clearInterval(interval);
 
-    /* Nếu các bước chưa chạy hết, in nốt */
     while (i < steps.length) {
       const line = document.createElement('div');
       line.className = 'status-line ' + steps[i].cls;
@@ -401,6 +506,9 @@ bypassBtn.addEventListener('click', () => {
         'Thiết bị: ' + navigator.userAgent;
 
       resultBox.classList.add('show');
+
+      /* Lưu trạng thái đã bypass lần cuối */
+      saveSession({ lastUrl: url, lastLink: mapped });
     } else {
       /* ---- LỖI (85% kết nối / 15% error 404) ---- */
       const r = Math.random();
@@ -415,6 +523,19 @@ bypassBtn.addEventListener('click', () => {
     bypassBtn.textContent = 'VƯỢT LINK';
   }, 15000);
 });
+
+/* ====================== KHỞI ĐỘNG ====================== */
+(function init() {
+  /* Nếu còn session hợp lệ trong ngày → vào thẳng main */
+  if (isSessionValid()) {
+    loginScreen.classList.add('hidden');
+    mainScreen.classList.remove('hidden');
+  } else {
+    updateSessionInfo();
+  }
+  /* Hẹn tự động reset khi qua 00:00 */
+  scheduleMidnightReset();
+})();
 </script>
 </body>
-  </html>
+</html>
